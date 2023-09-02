@@ -1,20 +1,21 @@
-import shutil
 import os
-import json  # Add this line to import the json module
+import json
 import argparse
-import logging
 from copyfile import copyFile
 
 
 def theprogram():
+    # Set up arguments for terminal command use
     parser = argparse.ArgumentParser()
-    parser.add_argument("presentation_directory",
-        help="Root directory containing Brightsign presentation (current-sync.xml + pool/).")
+    parser.add_argument(
+        "presentation_directory",
+        help="Root directory containing Brightsign presentation (local-sync.json + pool/).",
+    )
     args = parser.parse_args()
     PRESENTATION_LOCATION = args.presentation_directory
 
-
- if os.path.isdir(PRESENTATION_LOCATION):
+    # Check if the path is a directory
+    if os.path.isdir(PRESENTATION_LOCATION):
         if PRESENTATION_LOCATION[-1] != "/":
             PRESENTATION_LOCATION = PRESENTATION_LOCATION + "/"
     else:
@@ -32,16 +33,19 @@ def theprogram():
         exit()
 
     # Load JSON data
-    with open(PRESENTATION_LOCATION + "local-sync.json", "r", encoding="utf-8") as json_file:
+    with open(
+        PRESENTATION_LOCATION + "local-sync.json", "r", encoding="utf-8"
+    ) as json_file:
         data = json.load(json_file)
 
-    # baseurl = data["meta"]["client"]["base"]
     for download in data["files"]["download"]:
         name = download["name"]
         urlpath = download["link"]
         filepath = PRESENTATION_LOCATION + urlpath
-        # [len(baseurl) + 1 :]
 
+        # Check if the file name ends with .bml and change the extension to .bpfx
+        if name.endswith(".bml"):
+            name = os.path.splitext(name)[0] + ".bpfx"
         copyFile(
             os.path.abspath(filepath),
             os.path.abspath(PRESENTATION_LOCATION + "kiddie_pool/" + name),
